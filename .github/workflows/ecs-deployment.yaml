@@ -43,6 +43,7 @@ jobs:
           context: ./API-jokes
           file: ./API-jokes/Dockerfile.prod
           push: true
+          platforms: linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
   build-image-react:
     runs-on: ubuntu-latest
@@ -71,6 +72,7 @@ jobs:
           context: ./react-client
           file: ./react-client/Dockerfile.prod
           push: true
+          platforms: linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
   deploy-to-ecs:
     needs:
@@ -82,7 +84,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -90,7 +92,7 @@ jobs:
 
       - name: Render Node container in task definition
         id: render-node-container
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@v2
         with:
           task-definition-family: ${{ env.TASK_DEFINITION }}
           container-name: ${{ env.NODE_CONTAINER_NAME }}
@@ -98,14 +100,14 @@ jobs:
 
       - name: Render React container in task definition
         id: render-react-container
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@v2
         with:
           task-definition: ${{ steps.render-node-container.outputs.task-definition }}
           container-name: ${{ env.REACT_CONTAINER_NAME }}
           image: ${{ vars.DOCKER_USERNAME }}/${{ env.REACT_IMAGE_NAME }}
 
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-react-container.outputs.task-definition }}
           service: ${{env.ECS_SERVICE_NAME}}
