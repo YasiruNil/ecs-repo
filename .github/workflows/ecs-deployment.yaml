@@ -28,10 +28,11 @@ jobs:
           tags: |
             latest  
             v1.0.${{ github.run_number }}
-            
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./API-jokes/Dockerfile.prod
+          context: ./API-jokes
+          file: ./API-jokes/Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
