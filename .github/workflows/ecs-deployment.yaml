@@ -8,6 +8,13 @@ on:
 env: 
   NODE_IMAGE_NAME: ECS-demo-node
   REACT_IMAGE_NAME: ECS-demo-client
+  AWS_REGION: us-east-1
+  ECS_CLUSTER_NAME: ecs-cluster
+  ECS_SERVICE_NAME: ecs-service
+  TASK_DEFINITION: ecs-task-def
+  NODE_CONTAINER_NAME: node-app
+  REACT_CONTAINER_NAME: client-app
+
 jobs:
   build-image-node:
     runs-on: ubuntu-latest
@@ -65,3 +72,36 @@ jobs:
           file: ./react-client/Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+  deploy-to-ecs:
+    needs: [build-image-node, build-image-react]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create ECS task definition
+        id: create-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-family: ${{env.TASK_DEFINITION}}
+          container-name: ${{env.NODE_CONTAINER_NAME}}
+          image: ${{ vars.DOCKER_USERNAME }}/${{ env.NODE_IMAGE_NAME }}:${{ github.run_number }}
+          container-name-2: ${{env.REACT_CONTAINER_NAME}}
+          image-2: ${{ vars.DOCKER_USERNAME }}/${{ env.REACT_IMAGE_NAME }}:${{ github.run_number }}
+          
+
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{env.TASK_DEFINITION}}
+          service: ${{env.ECS_SERVICE_NAME}}
+          cluster: ${{env.ECS_CLUSTER_NAME}}
+          wait-for-service-stability: true        
