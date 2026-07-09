@@ -5,7 +5,7 @@ on:
       - main
   workflow_dispatch:
 
-env: 
+env:
   NODE_IMAGE_NAME: ECS-demo-node
   REACT_IMAGE_NAME: ECS-demo-client
   AWS_REGION: us-east-1
@@ -73,7 +73,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
   deploy-to-ecs:
-    needs: [build-image-node, build-image-react]
+    needs:
+        - build-image-node
+        - build-image-react
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -108,4 +110,4 @@ jobs:
           task-definition: ${{ steps.render-react-container.outputs.task-definition }}
           service: ${{env.ECS_SERVICE_NAME}}
           cluster: ${{env.ECS_CLUSTER_NAME}}
-          wait-for-service-stability: true        
+          wait-for-service-stability: true
