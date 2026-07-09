@@ -86,22 +86,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create ECS task definition
-        id: create-task-def
+      - name: Render Node container in task definition
+        id: render-node-container
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition-family: ${{env.TASK_DEFINITION}}
+          task-definition-family: ${{ env.TASK_DEFINITION }}
           container-name: ${{env.NODE_CONTAINER_NAME}}
-          image: ${{ vars.DOCKER_USERNAME }}/${{ env.NODE_IMAGE_NAME }}:${{ github.run_number }}
-          container-name-2: ${{env.REACT_CONTAINER_NAME}}
-          image-2: ${{ vars.DOCKER_USERNAME }}/${{ env.REACT_IMAGE_NAME }}:${{ github.run_number }}
-          
+          image: ${{ vars.DOCKER_USERNAME }}/${{ env.NODE_IMAGE_NAME }}:v1.0.${{ github.run_number }}
 
+      - name: Render React container in task definition
+        id: render-react-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-node-container.outputs.task-definition }}
+          container-name: ${{env.REACT_CONTAINER_NAME}}
+          image: ${{ vars.DOCKER_USERNAME }}/${{ env.REACT_IMAGE_NAME }}:v1.0.${{ github.run_number }}
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{env.TASK_DEFINITION}}
+          task-definition: ${{ steps.render-react-container.outputs.task-definition }}
           service: ${{env.ECS_SERVICE_NAME}}
           cluster: ${{env.ECS_CLUSTER_NAME}}
           wait-for-service-stability: true        
