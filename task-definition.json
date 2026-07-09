@@ -1,0 +1,103 @@
+{
+    "family": "ecs-demo-task",
+    "taskRoleArn": "arn:aws:iam::660759886584:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::660759886584:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "node-app",
+            "image": "yasirunilanga/ecs-demo-node",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "protocol": "tcp",
+                    "name": "5000",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "MONGOURI",
+                    "value": "mongodb+srv://yasirudam:Yasiru%40220295@cluster0.heaxzrj.mongodb.net/?appName=Cluster0"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/ecs-demo-task",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "wget --spider -q http://localhost:5000/health || exit 1"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 2,
+                "startPeriod": 5
+            },
+            "systemControls": []
+        },
+        {
+            "name": "client-app",
+            "image": "yasirunilanga/ecs-demo-client",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "name": "80",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/ecs-demo-task",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "wget --spider -q http://localhost:80/ || exit 1"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 2,
+                "startPeriod": 5
+            },
+            "systemControls": []
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "1024",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
