@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_IMAGE_NAME: ECS-demo-node
-  REACT_IMAGE_NAME: ECS-demo-client
+  NODE_IMAGE_NAME: ecs-demo-node
+  REACT_IMAGE_NAME: ecs-demo-client
   AWS_REGION: us-east-1
-  ECS_CLUSTER_NAME: ecs-cluster
-  ECS_SERVICE_NAME: ecs-service
-  TASK_DEFINITION: ecs-task-def
+  ECS_CLUSTER_NAME: ecs-cluster-demo
+  ECS_SERVICE_NAME: ecs-demo-SV
+  TASK_DEFINITION: ecs-demo-task
   NODE_CONTAINER_NAME: node-app
   REACT_CONTAINER_NAME: client-app
 
